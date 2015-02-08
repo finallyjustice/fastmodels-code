@@ -1,0 +1,47 @@
+ARM Virtualization and TrustZone
+
+
+Here is how to make change to linux-kvm-arm.
+
+Typically, a hypervisor determines whether a Guest OS can access secure state directly.
+The HCR includes a bit that traps use of the SMC instruction to the Hyp Trap exception.
+
+When HCR.TSC is set to 1, an attempt to execute an SMC instruction from a non-secure PL1 mode, 
+generates a Hyp Trap exception, regardless of the value pf SCR.SCD.
+
+When HCR.TSC is set to 0, SCR.SCD controls whether SMC instruction can be executed from non-secure state:
+1. When SCR.SCD is set to 0, the SMC instruction executes normally in secure world.
+2. When SCR.SCD is set to 1, SMC instruction is UNDEFINED in non-secure world.
+
+In arch/arm/include/asm/kvm_arm.h, find "#define HCR_GUEST_MASK" and remove "HCR_TSC".
+
+Before changing:
+
+/*
+ * The bits we set in HCR:
+ * TAC:     Trap ACTLR
+ * TSC:     Trap SMC
+ * TSW:     Trap cache operations by set/way
+ * TWI:     Trap WFI
+ * TWE:     Trap WFE
+ * TIDCP:   Trap L2CTLR/L2ECTLR
+ * BSU_IS:  Upgrade barriers to the inner shareable domain
+ * FB:      Force broadcast of all maintainance operations
+ * AMO:     Override CPSR.A and enable signaling with VA
+ * IMO:     Override CPSR.I and enable signaling with VI
+ * FMO:     Override CPSR.F and enable signaling with VF
+ * SWIO:    Turn set/way invalidates into set/way clean+invalidate
+ */
+#define HCR_GUEST_MASK (HCR_TSC | HCR_TSW | HCR_TWI | HCR_VM | HCR_BSU_IS | \
+				HCR_FB | HCR_TAC | HCR_AMO | HCR_IMO | HCR_FMO | \
+				HCR_TWE | HCR_SWIO | HCR_TIDCP)
+
+After Changing:
+
+#define HCR_GUEST_MASK (HCR_TSW | HCR_TWI | HCR_VM | HCR_BSU_IS | \
+				HCR_FB | HCR_TAC | HCR_AMO | HCR_IMO | HCR_FMO | \
+				HCR_TWE | HCR_SWIO | HCR_TIDCP)
+
+
+Code Link:
+git clone git://github.com/virtualopensystems/linux-kvm-arm.git
