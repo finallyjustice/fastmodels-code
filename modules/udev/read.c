@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 		read(fp, buf, 0);
 		//sched_yield();
 		//sleep(1);
-		usleep(100);
+		//usleep(100);
 	}
 
 	close(fp);

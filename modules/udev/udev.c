@@ -18,6 +18,8 @@ int dev_minor = 0;
 
 int global_val = 0;
 
+long mytimeout = 100 * HZ / 1000;
+
 int temp_open(struct inode *inode, struct file *filep)
 {
 	printk(KERN_ALERT "temp_open\n");
@@ -42,6 +44,11 @@ ssize_t temp_read(struct file *filep, char __user *buf, size_t count, loff_t *of
 			".arch_extension sec\n\t"
 			"smc #0\n\t") ;
 
+	current->state = TASK_UNINTERRUPTIBLE;
+	schedule_timeout(mytimeout);
+	//printk(KERN_ALERT "%d\n", HZ);
+
+	//schedule();
 	//global_val++;
 	//global_val++;
 	//printk(KERN_INFO "temp_read\n");
