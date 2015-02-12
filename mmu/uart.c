@@ -9,7 +9,7 @@ void uart_send(const char c)
 		__REG(P2V(UART0)) = '\r';
 }
 
-/*void printint(int xx, int base, int sign)
+void printint(int xx, int base, int sign)
 {
 	static char digits[] = "0123456789abcdef";
 	char buf[16];
@@ -75,4 +75,4 @@ void cprintf(char *fmt, ...)
 			break;
 		}
 	}
-}*/
+}

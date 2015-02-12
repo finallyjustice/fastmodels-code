@@ -1,3 +1,6 @@
+#ifndef TYPES_INCLUDE
+#define TYPES_INCLUDE
+
 typedef unsigned int    uint;
 typedef unsigned short  ushort;
 typedef unsigned char   uchar;
@@ -13,4 +16,7 @@ typedef unsigned int    Rendez;
 
 #ifndef NULL
 #define NULL ((void*)0)
+#endif
+
+
 #endif

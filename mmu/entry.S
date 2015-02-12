@@ -34,7 +34,7 @@ start:
 
 	@ Now we've got rid of the secondary CPUs, set up a stack
 	@ for CPU 0 so we can write most of this in C.
-#ldr     sp, =stacktop
+	#ldr     sp, =stacktop
 	ldr     sp, =svc_stktop
 
 	@ And call the C entrypoint
@@ -57,7 +57,3 @@ jump_stack:
 	ADD     r0, r0, #0x40000000
 	MOV     sp, r0
 	MOV     pc, lr
-
-#.global raise
-#raise:
-#	mov pc, lr	
