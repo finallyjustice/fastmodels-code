@@ -34,21 +34,30 @@ start:
 
 	@ Now we've got rid of the secondary CPUs, set up a stack
 	@ for CPU 0 so we can write most of this in C.
-	ldr     sp, =stacktop
+#ldr     sp, =stacktop
+	ldr     sp, =svc_stktop
 
 	@ And call the C entrypoint
-	bl      c_start
+	bl      bootmain
 	@ Never reached
 1:	b 1b
 
-	@
-	@ Function for C code to make semihosting calls:
-	@
+#@
+#@ Function for C code to make semihosting calls:
+#@
 #.globl __semi_call
 #__semi_call:
 #	svc     0x123456
 #	mov pc, lr
 
-.global raise
-raise:
-	mov pc, lr	
+# during startup, kernel stack uses user address, now switch it to kernel addr
+.global jump_stack
+jump_stack:
+	MOV     r0, sp
+	ADD     r0, r0, #0x40000000
+	MOV     sp, r0
+	MOV     pc, lr
+
+#.global raise
+#raise:
+#	mov pc, lr	

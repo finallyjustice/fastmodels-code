@@ -10,7 +10,9 @@ CFLAGS += -march=armv7-a -marm
 
 OBJS = \
 	entry.o \
-	start.o
+	start.o \
+	main.o \
+	uart.o
 
 all: kernel.elf
 
