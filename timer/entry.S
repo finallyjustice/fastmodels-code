@@ -1,3 +1,14 @@
+.equ Mode_USR, 0x10
+.equ Mode_FIQ, 0x11
+.equ Mode_IRQ, 0x12
+.equ Mode_SVC, 0x13
+.equ Mode_ABT, 0x17
+.equ Mode_UND, 0x1B
+.equ Mode_SYS, 0x1F
+.equ Mode_MON, 0x16
+.equ MODE_MASK, 0x1f
+
+
 	.syntax	unified
 	.arch_extension sec
 	.arch_extension virt
@@ -52,7 +63,11 @@ reset:
 
 	@ Now we've got rid of the secondary CPUs, set up a stack
 	@ for CPU 0 so we can write most of this in C.
-	ldr     sp, =stacktop
+	ldr sp, =svc_stacktop
+
+	cps #Mode_IRQ
+	ldr sp, =irq_stacktop
+	cps #Mode_SVC
 
 	@Write Secure World Vector Base Address
 	@ ---------------------------------------
@@ -91,9 +106,31 @@ DAbortHandler:
 	b DAbortHandler
 
 IRQHandler:
-	push {lr}
+	# Now in IRQ mode
+	sub r14, r14, #4
+	stmfd r13!, {r0}
+	stmfd r13!, {r1-r2, r14}
+	mov r0, r13
+	add r13, r13, #16
+
+	# Switch from IRQ mode to SVC mode
+	MRS     r2, cpsr
+	BIC     r2, r2, #MODE_MASK
+	ORR     r2, r2, #Mode_SVC
+	MSR     cpsr_cxsf, r2
+
+	push {r3-r12}
+	ldmfd r0!, {r1-r2, r14}
+	push {r1-r2, r14}
+	mov r1, r0
+	ldmfd r1!, {r0}
+	push {r0}
+
 	bl irq_handler
-	pop {lr}
+
+	pop {r0}
+	pop {r1-r2, r14}
+	pop {r3-r12}
 	mov pc, lr
 
 FIQHandler:

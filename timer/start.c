@@ -1,5 +1,92 @@
+typedef unsigned int   uint;
+typedef unsigned short ushort;
+typedef unsigned char  uchar;
+typedef unsigned int uint32;
+typedef unsigned short uint16;
+typedef unsigned char uint8;
+
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
+#define VIC_BASE        0x2c000000
+#define PIC_TIMER01     2
+#define PIC_TIMER23     3
+#define PIC_UART0       5
+#define PIC_GRAPHIC     19
+
+#define HZ           100
+
+#define TIMER0          0x1c110000
+#define TIMER1          0x1c120000
+#define CLK_HZ          1000000     // the clock is 1MHZ
+
+// A SP804 has two timers, we only use the first one, and as perodic timer
+
+// define registers (in units of 4-bytes)
+#define TIMER_LOAD     0    // load register, for perodic timer
+#define TIMER_CURVAL   1    // current value of the counter
+#define TIMER_CONTROL  2    // control register
+#define TIMER_INTCLR   3    // clear (ack) the interrupt (any write clear it)
+#define TIMER_MIS      5    // masked interrupt status
+
+// control register bit definitions
+#define TIMER_ONESHOT  0x01 // wrap or one shot
+#define TIMER_32BIT    0x02 // 16-bit/32-bit counter
+#define TIMER_INTEN    0x20 // enable/disable interrupt
+#define TIMER_PERIODIC 0x40 // enable periodic mode
+#define TIMER_EN       0x80 // enable the timer
+
+#define SGI_TYPE        1
+#define PPI_TYPE        2
+#define SPI_TYPE        3
+
+#define GICD_CTLR       0x000
+#define GICD_TYPER      0x004
+#define GICD_IIDR       0x008
+
+#define GICD_IGROUP     0x080
+#define GICD_ISENABLE       0x100
+#define GICD_ICENABLE       0x180
+#define GICD_ISPEND     0x200
+#define GICD_ICPEND     0x280
+#define GICD_ISACTIVE       0x300
+#define GICD_ICACTIVE       0x380
+#define GICD_IPRIORITY      0x400
+#define GICD_ITARGET        0x800
+#define GICD_ICFG       0xC00
+
+#define GICC_CTLR       0x000
+#define GICC_PMR        0x004
+#define GICC_BPR        0x008
+#define GICC_IAR        0x00C
+#define GICC_EOIR       0x010
+#define GICC_RRR        0x014
+#define GICC_HPPIR      0x018
+
+#define GICC_ABPR       0x01C
+#define GICC_AIAR       0x020
+#define GICC_AEOIR      0x024
+#define GICC_AHPPIR     0x028
+
+#define GICC_APR        0x0D0
+#define GICC_NSAPR      0x0E0
+#define GICC_IIDR       0x0FC
+#define GICC_DIR        0x1000
+
+static volatile uint* gic_base;
+
+#define GICD_REG(o)     (*(uint *)(((uint) gic_base) + 0x1000 + o))
+#define GICC_REG(o)     (*(uint *)(((uint) gic_base) + 0x2000 + o))
+
+// cpsr/spsr bits
+#define NO_INT      0xc0
+#define DIS_INT     0x80
 
 volatile unsigned char * const UART0_BASE = (unsigned char *)0x1c090000;
+
+void cli (void);
+void sti (void);
 
 void uart_send(unsigned int c)
 {
@@ -91,99 +178,31 @@ void swi_handler()
 	cprintf("In Secure World's SWI Handler\n");
 }
 
-void irq_handler()
+int gic_getack()
 {
-	cprintf("In Secure World's IRQ Handler\n");
+	return GICC_REG(GICC_IAR);
 }
-
-typedef unsigned int   uint;
-typedef unsigned short ushort;
-typedef unsigned char  uchar;
-typedef unsigned int uint32;
-typedef unsigned short uint16;
-typedef unsigned char uint8;
-
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
-
-#define VIC_BASE        0x2c000000
-#define PIC_TIMER01     2
-#define PIC_TIMER23     3
-#define PIC_UART0       5
-#define PIC_GRAPHIC     19
-
-#define HZ           1000
-
-#define TIMER0          0x1c110000
-#define TIMER1          0x1c120000
-#define CLK_HZ          1000000     // the clock is 1MHZ
-
-// A SP804 has two timers, we only use the first one, and as perodic timer
-
-// define registers (in units of 4-bytes)
-#define TIMER_LOAD     0    // load register, for perodic timer
-#define TIMER_CURVAL   1    // current value of the counter
-#define TIMER_CONTROL  2    // control register
-#define TIMER_INTCLR   3    // clear (ack) the interrupt (any write clear it)
-#define TIMER_MIS      5    // masked interrupt status
-
-// control register bit definitions
-#define TIMER_ONESHOT  0x01 // wrap or one shot
-#define TIMER_32BIT    0x02 // 16-bit/32-bit counter
-#define TIMER_INTEN    0x20 // enable/disable interrupt
-#define TIMER_PERIODIC 0x40 // enable periodic mode
-#define TIMER_EN       0x80 // enable the timer
-
-#define SGI_TYPE        1
-#define PPI_TYPE        2
-#define SPI_TYPE        3
-
-#define GICD_CTLR       0x000
-#define GICD_TYPER      0x004
-#define GICD_IIDR       0x008
-
-#define GICD_IGROUP     0x080
-#define GICD_ISENABLE       0x100
-#define GICD_ICENABLE       0x180
-#define GICD_ISPEND     0x200
-#define GICD_ICPEND     0x280
-#define GICD_ISACTIVE       0x300
-#define GICD_ICACTIVE       0x380
-#define GICD_IPRIORITY      0x400
-#define GICD_ITARGET        0x800
-#define GICD_ICFG       0xC00
-
-#define GICC_CTLR       0x000
-#define GICC_PMR        0x004
-#define GICC_BPR        0x008
-#define GICC_IAR        0x00C
-#define GICC_EOIR       0x010
-#define GICC_RRR        0x014
-#define GICC_HPPIR      0x018
-
-#define GICC_ABPR       0x01C
-#define GICC_AIAR       0x020
-#define GICC_AEOIR      0x024
-#define GICC_AHPPIR     0x028
-
-#define GICC_APR        0x0D0
-#define GICC_NSAPR      0x0E0
-#define GICC_IIDR       0x0FC
-#define GICC_DIR        0x1000
-
-static volatile uint* gic_base;
-
-#define GICD_REG(o)     (*(uint *)(((uint) gic_base) + 0x1000 + o))
-#define GICC_REG(o)     (*(uint *)(((uint) gic_base) + 0x2000 + o))
-
-// cpsr/spsr bits
-#define NO_INT      0xc0
-#define DIS_INT     0x80
 
 static int spi2id(int spi)
 {
 	return spi+32;
+}
+
+void gic_eoi(int intn)
+{
+	GICC_REG(GICC_EOIR) = spi2id(intn);
+}
+
+void irq_handler()
+{
+	int intid, intn;
+	volatile uint * timer0 = (uint *)TIMER0;
+	intid = gic_getack(); /* iack */
+	intn = intid - 32;
+	cprintf("IRQ Number : %d\n", intn);
+	timer0[TIMER_INTCLR] = 1;
+	gic_eoi(intn);
+	sti();
 }
 
 static void gicd_set_bit(int base, int id, int bval) 
@@ -268,8 +287,15 @@ void timer_init(int hz)
 
 	timer0[TIMER_LOAD] = CLK_HZ / hz;
 	timer0[TIMER_CONTROL] = TIMER_EN|TIMER_PERIODIC|TIMER_32BIT|TIMER_INTEN;
+}
 
-	//pic_enable (PIC_TIMER01, isr_timer);
+void cli (void)
+{
+	uint val;
+	
+	asm volatile("MRS %[v], cpsr": [v]"=r" (val)::);
+	val |= DIS_INT;
+	asm volatile("MSR cpsr_cxsf, %[v]": :[v]"r" (val):);
 }
 
 void sti (void)
@@ -277,9 +303,9 @@ void sti (void)
 	uint val;
 
 	// ok, enable paging using read/modify/write
-	asm("MRS %[v], cpsr": [v]"=r" (val)::);
+	asm volatile("MRS %[v], cpsr": [v]"=r" (val)::);
 	val &= ~DIS_INT;            
-	asm("MSR cpsr_cxsf, %[v]": :[v]"r" (val):);
+	asm volatile("MSR cpsr_cxsf, %[v]": :[v]"r" (val):);
 }
 
 unsigned int ret_addr;
@@ -293,24 +319,6 @@ void c_start(void)
 	git_init((uint *)VIC_BASE);
 	timer_init(HZ);
 	sti();
-
-	int i, j;
-	int c = 0;
-	for(i=0; i<1000000; i++)
-	{
-		for(j=0; j<10; j++)
-		{
-				c++;
-				if(c > 1000)
-					c = 0;
-		}
-	}
-	cprintf("1, It is working! %d\n", c);
-	cprintf("2, It is working!\n");
-	cprintf("3, It is working!\n");
-	cprintf("1, It is working!\n");
-	cprintf("2, It is working!\n");
-	cprintf("3, It is working!\n");
 
 	while(1);
 }

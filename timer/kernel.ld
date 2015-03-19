@@ -12,6 +12,7 @@ OUTPUT_ARCH(arm)
 TARGET(binary)
 
 ENTRY_SVC_STACK_SIZE = 0x1000;
+ENTRY_IRQ_STACK_SIZE = 0x1000;
 
 SECTIONS
 {
@@ -23,5 +24,10 @@ SECTIONS
  /*define a stack for the entry*/
 	. = ALIGN(0x1000);
 	. += ENTRY_SVC_STACK_SIZE;
-	stacktop = .;
+	svc_stacktop = .;
+	
+	. = ALIGN(0x1000);
+	. += ENTRY_IRQ_STACK_SIZE;
+	irq_stacktop = .;
+
 }
