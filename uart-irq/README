@@ -1,0 +1,8 @@
+This is a bare metal code sample on Fast Models 9.1 with Cortex A15x1 to test the uart interrupt.
+It still has issues. The interrupt is delivered after I press the keyboard 8 times.
+
+To run Fast Models with the program, run:
+make
+sh run.sh
+
+For any question, please contact Dongli Zhang (dongli.zhang0129@gmail.com)
