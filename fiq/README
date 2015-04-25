@@ -1,0 +1,17 @@
+This is a bare metal code sample on Fast Models 9.1 with Cortex A15x1 to test the FIQ (not IRQ) timer interrupt.
+
+To run Fast Models with the program, run:
+make
+sh run.sh
+
+For any question, please contact Dongli Zhang (dongli.zhang0129@gmail.com)
+
+
+TrustZone non-secure (normal world) interrupt is always signaled as FIQ.
+The base address of GIC Distributor is 0x2c001000.
+The base address of GIC Interface is 0x2c002000.
+ICCICR Interface Control Register (banked) is at offset 0x0
+
+[0] ENABLES  enable secure interrupt
+[1] ENABLENS enable non-secure interrupt
+[3] FIQEn 1-signal secure interrupt as FIQ, 0-IRQ. non-secure interrupt is always IRQ
